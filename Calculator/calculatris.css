@@ -1,0 +1,58 @@
+* {
+}
+
+.main-container {
+	width: 206px;
+	padding: 7px;
+	background-color: #d9e4f1;
+}
+
+.display {
+	height: 60px;
+	background: linear-gradient(#e5eefb, #ffffff);
+	border: 1px solid #8e9cad;
+	margin: 5px 2px;
+	border-radius: 2px;
+}
+
+.current-expession {
+
+}
+
+.current-number {
+
+}
+
+.buttons-container {
+
+}
+
+.button, .button-double-height, .button-double-width {
+	text-align: center;
+	display: inline-block;
+	vertical-align: top;
+	border: 1px solid #8e9cad;
+	border-radius: 2px;
+	margin: 2px;
+	background: linear-gradient(#f0f6fb, #d7e2ef);
+}
+
+.button {
+	width: 32px;
+	height: 25px;
+}
+
+.button-double-height {
+	width: 32px;
+	height: 56px;
+	margin-bottom: -100px;
+}
+
+.button-double-width {
+	width: 74px;
+	height: 25px;
+}
+
+.digit-button {
+	background: linear-gradient(#f7fbff, #eaf1f8);
+}
