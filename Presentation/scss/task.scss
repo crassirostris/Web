@@ -1,0 +1,157 @@
+// from http://hugogiraudel.com/2013/08/08/advanced-sass-list-functions/
+
+@function to-string($list, $glue: '', $is-nested: false) {
+  $result: null;
+  @for $i from 1 through length($list) {
+    $e: nth($list, $i);
+    @if type-of($e) == list {
+      $result: $result#{to-string($e, $glue, true)};
+    }
+    @else {
+      $result: if($i != length($list) or $is-nested, $result#{$e}#{$glue}, $result#{$e});
+    }
+  }
+  @return $result;
+}
+
+@function replace-nth($list, $index, $value) {
+  $result: null;
+  @if type-of($index) != number {
+    @warn "$index: #{quote($index)} is not a number for `replace-nth`.";
+  }
+  @else if $index == 0 {
+    @warn "List index 0 must be a non-zero integer for `replace-nth`.";
+  }
+  @else if abs($index) > length($list) {
+    @warn "List index is #{$index} but list is only #{length($list)} item long for `replace-nth`.";
+  }
+  @else {
+    $result: ();
+    $index: if($index < 0, length($list) + $index + 1, $index);
+    @for $i from 1 through length($list) {
+      @if $i == $index {
+        $result: append($result, $value);
+      }
+      @else {
+        $result: append($result, nth($list, $i));
+      }
+    }
+  }
+  @return $result;
+}
+
+@function reverse($list, $recursive: false) {
+  $result: ();
+  @for $i from length($list)*-1 through -1 {
+    @if type-of(nth($list, abs($i))) == list and $recursive {
+      $result: append($result, reverse(nth($list, abs($i)), $recursive));
+    }
+    @else {
+      $result: append($result, nth($list, abs($i)));
+    }
+  }
+  @return $result;
+}
+
+// -----
+
+$k: 5;
+$lower-bounds: (1600, 1200, 900, 600, 0);
+$container-max-widthes: (1200: 1170, 900: 780, 600: 390);
+$container-biggest-width: 1950;
+$container-min-width: 320;
+$container-class: container;
+$row-class: string;
+$cell-class: index;
+
+@function step($old-list, $k) {
+  $result: ();
+  $max: max($old-list...);
+  $was-max: 0;
+  $old-list: reverse($old-list);
+  @for $i from 1 through length($old-list) {
+    $item: nth($old-list, $i);
+    $current: $item;
+    @if $was-max == 0 and $item == $max {
+      $was-max: 1;
+      @if $item == 1 {
+        $current: $k;
+      } @else {
+        $current: $item - 1;
+      }
+    }
+    $result: append($result, $current);
+  }
+  @return reverse($result);
+}
+
+@function all_steps($list) {
+  $result: append((), $list);
+  $nlist: $list;
+  $n: $k - 1;
+  @for $i from 1 through $n {
+    $nlist: step($nlist, $k - $i);
+    $result: append($result, ($nlist));
+  }
+  @return $result;
+}
+
+@function get_width($position, $index, $columns) {
+  @return nth(nth(all_steps($position), $k - $columns), $index);
+}
+
+@function generate_strings($n) {
+  @if $n == 0 {
+    @return ();
+  } @else {
+    $result: ($n);
+    @for $i from 1 through $n {
+      @if $i < $n {
+        $previous: generate_strings($n - $i);
+        @each $j in $previous {
+          $result: append($result, append($j, $i));
+        }
+      }
+    }
+    @return $result;
+  }
+}
+
+@mixin all($list) {
+  @for $i from 1 through length($lower-bounds) {
+    $s: "and (min-width: #{nth($lower-bounds, $i)}px)";
+    @if $i > 1 {
+      $s: $s + "and (max-width: #{nth($lower-bounds, $i - 1)-1}px)";
+    }
+    @media screen #{$s} {
+    @each $string in $list {
+      @for $index from 1 through length($string) {
+        $columns: $k - $i;
+        .#{$row-class}-#{to-string($string, '-')} .#{$cell-class}-#{$index} {
+          width: #{100.0 / ($columns + 1) * get_width($string, $index, $columns)}#{"%"};
+        }
+      }
+    }
+    }
+  }
+
+  $keys: map_keys($container-max-widthes);
+  @media screen and (min-width: #{max($keys...)}px) {
+    .#{$container-class} {
+      max-width: #{$container-biggest-width}px;
+    }
+  }
+  @each $key in $keys {
+    @media screen and (max-width: #{$key - 1}px) {
+      .#{$container-class} {
+        max-width: #{map_get($container-max-widthes, $key)}px;
+      }
+    }
+  }
+
+  .#{$container-class} {
+    min-width: #{$container-min-width}px;
+  }
+}
+
+@include all(generate_strings($k));

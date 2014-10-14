@@ -1,0 +1,18 @@
+$linkColor: #00F
+
+@function superest-color()
+  @return pink
+
+@mixin super-border($color)
+  border: 1px solid $color
+
+#header
+  background: #FFFFFF
+
+  .error
+    color: $linkColor
+    @include super-border($linkColor)
+
+  a
+    text-decoration: none
+    @include super-border(superest-color())

@@ -1,0 +1,11 @@
+#header {
+    background: #FFFFFF;
+}
+#header .error {
+    color: blue;
+    border: 1px solid blue;
+}
+#header a {
+    text-decoration: none;
+    border: 1px solid pink;
+}
